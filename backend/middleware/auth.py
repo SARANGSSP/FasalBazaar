@@ -164,10 +164,11 @@ def get_profile():
 def update_profile():
     from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
     try:
-        verify_jwt_in_request()
-        identity = get_jwt_identity()
-    except:
-        return jsonify({ 'error': 'Unauthorized' }), 401
+            verify_jwt_in_request()
+            identity = get_jwt_identity()
+    except Exception as e:
+            print(f"JWT verification failed: {repr(e)}", flush=True)
+            return jsonify({ 'error': 'Unauthorized' }), 401
 
     data = request.get_json()
 
