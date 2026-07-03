@@ -138,7 +138,8 @@ def get_profile():
     try:
         verify_jwt_in_request()
         identity = get_jwt_identity()
-    except:
+    except Exception as e:
+        print(f"JWT verification failed: {repr(e)}")
         return jsonify({ 'error': 'Unauthorized' }), 401
 
     user = query(
