@@ -3,10 +3,10 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 import os
-from routes.mandi import mandi_bp
+from backend.routes.mandi import mandi_bp
 import threading
 from flask import render_template
-from routes.chat import chat_bp
+from backend.routes.chat import chat_bp
 from flask import send_from_directory
 from datetime import timedelta                          # ← ADD
 
@@ -16,13 +16,13 @@ from datetime import timedelta                          # ← ADD
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
 
 # Import route blueprints
-from routes.auth         import auth_bp
-from routes.listings     import listings_bp
-from routes.requests     import requests_bp
-from routes.cart         import cart_bp
-from routes.transactions import transactions_bp
-from routes.reviews      import reviews_bp
-from routes.translate    import translate_bp
+from backend.routes.auth         import auth_bp
+from backend.routes.listings     import listings_bp
+from backend.routes.requests     import requests_bp
+from backend.routes.cart         import cart_bp
+from backend.routes.transactions import transactions_bp
+from backend.routes.reviews      import reviews_bp
+from backend.routes.translate    import translate_bp
 
 # ============================================================
 # App setup
