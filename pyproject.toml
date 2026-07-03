@@ -17,7 +17,8 @@ dependencies = [
     "PyJWT==2.12.1",
     "python-dotenv==1.2.2",
     "Werkzeug==3.1.6",
-    "requests"
+    "requests",
+    "google-generativeai"
 ]
 
 [tool.vercel]

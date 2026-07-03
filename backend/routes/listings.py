@@ -9,7 +9,7 @@ Changes in Week 1:
 import json
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from db import query
+from backend.db import query
 from .utils import (
     translate_via_reverie,
     build_translations_for_listing,

@@ -7,7 +7,7 @@ import os
 import json
 import threading
 import requests as http_requests
-from db import query  # your existing db helper
+from backend.db import query  # your existing db helper
 
 
 # ─────────────────────────────────────────────

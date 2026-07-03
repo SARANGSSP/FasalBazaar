@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
-from db import query
+from backend.db import query
 
 transactions_bp = Blueprint('transactions', __name__)
 
