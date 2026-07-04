@@ -8,11 +8,9 @@
 const Reverie = (() => {
   // Update these to point to your FLASK BACKEND (usually port 5000)
   // This prevents the 501 error from the simple http.server
-  const FLASK_URL = "http://localhost:5000";
-
-  const BASE_URL = `${FLASK_URL}/api/translate/`;
-  const BASE_URL_STT = `${FLASK_URL}/api/translate/stt`;
-  const BASE_URL_TRANSLIT = `${FLASK_URL}/api/translate/transliterate`;
+  const BASE_URL = "/api/translate/";
+  const BASE_URL_STT = "/api/translate/stt";
+  const BASE_URL_TRANSLIT = "/api/translate/transliterate";
 
   // ... rest of the file stays exactly the same ...
 
