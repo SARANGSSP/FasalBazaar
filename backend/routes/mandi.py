@@ -83,19 +83,19 @@ def get_mandi_prices():
     try:
         fetched = []
         while True:
-            for attempt in range(3):
+            for attempt in range(2):
                 try:
                     res = requests.get(
                         f'{MANDI_API_BASE}/{MANDI_RESOURCE}',
                         params=params,
-                        timeout=60
+                        timeout=15
                     )
                     res.raise_for_status()
                     break
                 except requests.exceptions.Timeout:
-                    if attempt == 2:
+                    if attempt == 1:
                         return jsonify({
-                            'error': 'Mandi API timed out after 3 attempts. Try again later.'
+                            'error': 'Mandi API timed out after 2 attempts. Try again later.'
                         }), 504
 
             data = res.json()
@@ -108,6 +108,12 @@ def get_mandi_prices():
                 break
 
             fetched.extend(_normalise(r) for r in batch)
+
+            # Stop once we have enough records to satisfy the requested limit,
+            # instead of pulling the entire dataset page by page.
+            if len(fetched) >= limit:
+                break
+
             total = int(data.get('total', 0))
             params['offset'] += 1000
             if params['offset'] >= total:
