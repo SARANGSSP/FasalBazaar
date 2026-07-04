@@ -70,7 +70,7 @@ def get_mandi_prices():
                 'cached': True
             }), 200
 
-    # ── Cache miss — paginate through Agmarknet API ────────────────────────────
+    # ── Cache miss — single request to Agmarknet ───────────────────────────────
     params = {
         'api-key': api_key,
         'format':  'json',
@@ -81,43 +81,31 @@ def get_mandi_prices():
     if state: params['filters[state]']     = state
 
     try:
-        fetched = []
-        while True:
-            for attempt in range(2):
-                try:
-                    res = requests.get(
-                        f'{MANDI_API_BASE}/{MANDI_RESOURCE}',
-                        params=params,
-                        timeout=15
-                    )
-                    res.raise_for_status()
-                    break
-                except requests.exceptions.Timeout:
-                    if attempt == 1:
-                        return jsonify({
-                            'error': 'Mandi API timed out after 2 attempts. Try again later.'
-                        }), 504
+        # Single request only — Agmarknet already filters by crop/state,
+        # so one page (up to 1000 records) is more than enough to satisfy
+        # any reasonable `limit`. Looping through multiple pages risked
+        # exceeding Vercel's serverless function timeout, which is why
+        # this worked fine on localhost (no timeout) but hung/504'd in
+        # production.
+        try:
+            res = requests.get(
+                f'{MANDI_API_BASE}/{MANDI_RESOURCE}',
+                params=params,
+                timeout=8
+            )
+            res.raise_for_status()
+        except requests.exceptions.Timeout:
+            return jsonify({
+                'error': 'Mandi API timed out. Try again later.'
+            }), 504
 
-            data = res.json()
+        data = res.json()
 
-            if 'records' not in data:
-                print(f"🚨 AGMARKNET API RESPONSE: {data}")
+        if 'records' not in data:
+            print(f"🚨 AGMARKNET API RESPONSE: {data}")
 
-            batch = data.get('records') or []
-            if not batch:
-                break
-
-            fetched.extend(_normalise(r) for r in batch)
-
-            # Stop once we have enough records to satisfy the requested limit,
-            # instead of pulling the entire dataset page by page.
-            if len(fetched) >= limit:
-                break
-
-            total = int(data.get('total', 0))
-            params['offset'] += 1000
-            if params['offset'] >= total:
-                break
+        batch = data.get('records') or []
+        fetched = [_normalise(r) for r in batch]
 
         # ── Only cache non-empty results ───────────────────────────────────────
         # If Agmarknet returned nothing (e.g. data not yet published for today),
@@ -131,7 +119,7 @@ def get_mandi_prices():
                 test_res = requests.get(
                     f'{MANDI_API_BASE}/{MANDI_RESOURCE}',
                     params={'api-key': api_key, 'format': 'json', 'limit': 1},
-                    timeout=10
+                    timeout=8
                 )
                 api_alive = bool(test_res.json().get('records'))
             except Exception:
