@@ -61,13 +61,15 @@ def signup():
         commit=True
     )
 
-    # Create JWT token
-    token = create_access_token(identity={
-        'id': user['id'],
-        'name': user['name'],
-        'email': user['email'],
-        'role': user['role']
-    })
+    # Create JWT token (identity must be a string; extra info goes in additional_claims)
+    token = create_access_token(
+        identity=str(user['id']),
+        additional_claims={
+            'name': user['name'],
+            'email': user['email'],
+            'role': user['role']
+        }
+    )
 
     return jsonify({
         'message': 'Account created successfully',
@@ -105,13 +107,15 @@ def login():
     if not bcrypt.checkpw(data['password'].encode('utf-8'), user['password_hash'].encode('utf-8')):
         return jsonify({ 'error': 'Invalid email or password' }), 401
 
-    # Create JWT token
-    token = create_access_token(identity={
-        'id': user['id'],
-        'name': user['name'],
-        'email': user['email'],
-        'role': user['role']
-    })
+    # Create JWT token (identity must be a string; extra info goes in additional_claims)
+    token = create_access_token(
+        identity=str(user['id']),
+        additional_claims={
+            'name': user['name'],
+            'email': user['email'],
+            'role': user['role']
+        }
+    )
 
     return jsonify({
         'message': 'Login successful',
@@ -137,9 +141,9 @@ def get_profile():
     from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
     try:
         verify_jwt_in_request()
-        identity = get_jwt_identity()
+        user_id = get_jwt_identity()
     except Exception as e:
-        print(f"JWT verification failed: {repr(e)}")
+        print(f"JWT verification failed: {repr(e)}", flush=True)
         return jsonify({ 'error': 'Unauthorized' }), 401
 
     user = query(
@@ -147,7 +151,7 @@ def get_profile():
                   pincode, city, state, country, lat, lng,
                   preferred_language, default_radius, created_at
            FROM users WHERE id = %s''',
-        (identity['id'],),
+        (user_id,),
         fetchone=True
     )
 
@@ -164,11 +168,11 @@ def get_profile():
 def update_profile():
     from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
     try:
-            verify_jwt_in_request()
-            identity = get_jwt_identity()
+        verify_jwt_in_request()
+        user_id = get_jwt_identity()
     except Exception as e:
-            print(f"JWT verification failed: {repr(e)}", flush=True)
-            return jsonify({ 'error': 'Unauthorized' }), 401
+        print(f"JWT verification failed: {repr(e)}", flush=True)
+        return jsonify({ 'error': 'Unauthorized' }), 401
 
     data = request.get_json()
 
@@ -198,7 +202,7 @@ def update_profile():
             data.get('lng'),
             data.get('preferred_language'),
             data.get('default_radius'),
-            identity['id']
+            user_id
         ),
         commit=True
     )
