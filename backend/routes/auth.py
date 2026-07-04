@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token
 import bcrypt
-from backend.db import query
+from db import query
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -36,15 +36,16 @@ def signup():
     # Insert user
     user = query(
         '''
-        INSERT INTO users (name, email, phone, password_hash, role,
+        INSERT INTO users (name, email, phone, whatsapp_number, password_hash, role,
                            pincode, city, state, country, lat, lng, preferred_language, default_radius)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id, name, email, phone, role
         ''',
         (
             data['name'],
             data['email'],
             data['phone'],
+            data.get('whatsapp_number', data['phone']),
             password_hash,
             data['role'],
             data.get('pincode'),
@@ -137,11 +138,12 @@ def get_profile():
     try:
         verify_jwt_in_request()
         identity = get_jwt_identity()
-    except:
+    except Exception as e:
+        print(f"JWT verification failed: {repr(e)}")
         return jsonify({ 'error': 'Unauthorized' }), 401
 
     user = query(
-        '''SELECT id, name, email, phone, role,
+        '''SELECT id, name, email, phone, whatsapp_number, role,
                   pincode, city, state, country, lat, lng,
                   preferred_language, default_radius, created_at
            FROM users WHERE id = %s''',
@@ -162,10 +164,11 @@ def get_profile():
 def update_profile():
     from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
     try:
-        verify_jwt_in_request()
-        identity = get_jwt_identity()
-    except:
-        return jsonify({ 'error': 'Unauthorized' }), 401
+            verify_jwt_in_request()
+            identity = get_jwt_identity()
+    except Exception as e:
+            print(f"JWT verification failed: {repr(e)}", flush=True)
+            return jsonify({ 'error': 'Unauthorized' }), 401
 
     data = request.get_json()
 
@@ -173,6 +176,7 @@ def update_profile():
         '''UPDATE users SET
             name               = COALESCE(%s, name),
             phone              = COALESCE(%s, phone),
+            whatsapp_number    = COALESCE(%s, whatsapp_number),
             pincode            = COALESCE(%s, pincode),
             city               = COALESCE(%s, city),
             state              = COALESCE(%s, state),
@@ -185,6 +189,7 @@ def update_profile():
         (
             data.get('name'),
             data.get('phone'),
+            data.get('whatsapp_number'),
             data.get('pincode'),
             data.get('city'),
             data.get('state'),
