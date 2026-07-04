@@ -87,7 +87,9 @@ def create_request():
         delivery_pref = 'either'
 
     # amount_required and budget can be numbers or strings — store as string
-    amount_required = str(data['amount_required'])
+    import re
+    match = re.search(r'[\d.]+', str(data['amount_required']))
+    amount_required = match.group() if match else '0'
     budget          = str(data['budget'])
 
     req = query(
