@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 folder_structure.txt
 backend/venv/
+backend/fasal-bazaar-log-export-2026-07-03T22-13-55.csv
+recovery-codes.txt
+templates/README.md

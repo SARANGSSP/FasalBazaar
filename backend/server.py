@@ -55,7 +55,7 @@ app.register_blueprint(chat_bp, url_prefix='/api')
 # ============================================================
 @app.route('/api/health')
 def health():
-    return { 'status': 'ok', 'message': 'Fasal Bazaar API is running' }
+    return { 'status': 'ok', 'message': 'Fasal Bazaar API is running', 'version': 'debug-test-1' }
 
 @app.route("/")
 def home():
