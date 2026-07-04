@@ -64,18 +64,27 @@ def create_request():
         if not data.get(field):
             return jsonify({ 'error': f'{field} is required' }), 400
 
-    # Normalise delivery_preference to DB ENUM values
+    # Normalise delivery_preference to DB ENUM values# Normalise delivery_preference to DB ENUM values (pickup / delivery / either)
     DELIVERY_MAP = {
-        'delivery': 'Seller Must Deliver',
-        'pickup':   'Buyer Arranges Transport',
-        'any':      'Negotiable',
+        'delivery': 'delivery',
+        'Seller Must Deliver': 'delivery',
+        'Home Delivery (Seller Delivers)': 'delivery',
+
+        'pickup': 'pickup',
+        'Buyer Arranges Transport': 'pickup',
+        'I will arrange transport / pick up': 'pickup',
+
+        'any': 'either',
+        'either': 'either',
+        'Negotiable': 'either',
+        'Either is fine / Negotiable': 'either',
     }
-    delivery_pref = data.get('delivery_preference', 'Negotiable')
+    delivery_pref = data.get('delivery_preference', 'either')
     delivery_pref = DELIVERY_MAP.get(delivery_pref, delivery_pref)
-    # Final safety: if it's still not a valid ENUM value, default to Negotiable
-    valid_prefs = ('Buyer Arranges Transport', 'Seller Must Deliver', 'Negotiable')
+    # Final safety: if it's still not a valid ENUM value, default to 'either'
+    valid_prefs = ('pickup', 'delivery', 'either')
     if delivery_pref not in valid_prefs:
-        delivery_pref = 'Negotiable'
+        delivery_pref = 'either'
 
     # amount_required and budget can be numbers or strings — store as string
     amount_required = str(data['amount_required'])
